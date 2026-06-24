@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartOps KV3 Presentation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --viettel-red: #EE0033;
+            --viettel-red-dark: #cc002c;
+            --viettel-red-glow: rgba(238, 0, 51, 0.4);
+            --bg-dark: #09090b; /* Zinc 950 */
+            --bg-card: rgba(24, 24, 27, 0.7); /* Zinc 900 */
+            --bg-card-hover: rgba(39, 39, 42, 0.8);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-blue: #38bdf8;
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-border-highlight: rgba(238, 0, 51, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Abstract Dynamic Background */
+        .bg-container {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -2;
+            background-image: url('images/bg_main.png');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .bg-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1;
+            background: linear-gradient(135deg, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0.8) 100%);
+            backdrop-filter: blur(2px);
+        }
+
+        .blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.4;
+            border-radius: 50%;
+            animation: float 10s infinite ease-in-out alternate;
+            z-index: -1;
+        }
+        .blob.red {
+            width: 40vw; height: 40vw;
+            background: var(--viettel-red);
+            top: -10vw; right: -10vw;
+            animation-delay: 0s;
+        }
+        .blob.blue {
+            width: 30vw; height: 30vw;
+            background: var(--accent-blue);
+            bottom: -5vw; left: -10vw;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(-30px, 30px) scale(1.1); }
+        }
+
+        /* Glassmorphism effects */
+        .glass {
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glass::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 50%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent);
+            transform: skewX(-20deg);
+            transition: all 0.7s ease;
+        }
+        
+        .glass:hover {
+            border-color: var(--glass-border-highlight);
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(238, 0, 51, 0.15);
+        }
+        
+        .glass:hover::before {
+            left: 200%;
+        }
+
+        .header {
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            z-index: 10;
+            background: rgba(9, 9, 11, 0.7);
+            backdrop-filter: blur(20px);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--viettel-red);
+            letter-spacing: 1.5px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo span {
+            color: var(--text-main);
+            font-weight: 300;
+        }
+
+        .slide-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        .slide {
+            position: absolute;
+            width: 1440px;
+            height: 800px;
+            opacity: 0;
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: scale(calc(var(--scale, 1) * 0.9)) translateZ(-100px) rotateX(5deg);
+            transform-origin: center center;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 2.5rem;
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: scale(var(--scale, 1)) translateZ(0) rotateX(0);
+            pointer-events: all;
+            z-index: 5;
+        }
+
+        .slide-title {
+            font-size: 3rem;
+            font-weight: 800;
+            color: transparent;
+            background: linear-gradient(90deg, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .slide-title::after {
+            content: '';
+            position: absolute;
+            left: 0; bottom: -10px;
+            width: 60px; height: 4px;
+            background: var(--viettel-red);
+            border-radius: 2px;
+            box-shadow: 0 0 15px var(--viettel-red-glow);
+        }
+
+        .slide-subtitle {
+            font-size: 1.4rem;
+            color: var(--accent-blue);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Layout Utilities */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+        .flex-col { display: flex; flex-direction: column; gap: 1.5rem; }
+        .flex-row { display: flex; align-items: center; gap: 1rem; }
+        .flex-center { display: flex; justify-content: center; align-items: center; }
+        .text-center { text-align: center; }
+
+        /* Typography & Lists */
+        h3 { font-size: 1.6rem; margin-bottom: 1rem; color: #fff; font-weight: 600; display: flex; align-items: center; gap: 10px;}
+        h3 i { color: var(--viettel-red); }
+        
+        ul.icon-list { list-style: none; display: flex; flex-direction: column; gap: 1.2rem; }
+        ul.icon-list li { 
+            display: flex; 
+            align-items: flex-start; 
+            gap: 15px; 
+            font-size: 1.2rem; 
+            line-height: 1.5;
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+        ul.icon-list li:hover { color: #fff; }
+        ul.icon-list li i { 
+            color: var(--viettel-red); 
+            flex-shrink: 0; 
+            margin-top: 3px;
+        }
+
+        /* Tags / Badges */
+        .tags { display: flex; flex-wrap: wrap; gap: 1rem; }
+        .tag {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.6rem 1.2rem;
+            border-radius: 30px;
+            font-size: 1rem;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        .tag:hover {
+            background: rgba(238, 0, 51, 0.1);
+            border-color: rgba(238, 0, 51, 0.4);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+        .tag.blue:hover {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+        .tag.red-solid {
+            background: var(--viettel-red);
+            border: none;
+            color: white;
+            box-shadow: 0 4px 15px var(--viettel-red-glow);
+        }
+
+        /* Flow Arrow */
+        .flow-arrow {
+            color: var(--viettel-red);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Animations */
+        .animate-in {
+            opacity: 0;
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            animation-delay: var(--delay, 0s);
+        }
+        
+        .slide.active .animate-in {
+            animation-play-state: running;
+        }
+
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(30px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(238,0,51,0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(238,0,51,0); }
+            100% { box-shadow: 0 0 0 0 rgba(238,0,51,0); }
+        }
+
+        /* Controls */
+        .controls {
+            padding: 1.5rem 4rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(9, 9, 11, 0.85);
+            border-top: 1px solid var(--glass-border);
+            z-index: 10;
+            backdrop-filter: blur(20px);
+        }
+
+        .btn {
+            background: var(--viettel-red);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn:hover {
+            background: var(--viettel-red-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px var(--viettel-red-glow);
+        }
+        
+        .btn-outline {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            color: var(--text-main);
+        }
+        
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: none;
+        }
+
+        .progress-bar-container {
+            flex: 1;
+            margin: 0 3rem;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #cc002c, #ff1a4d);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.4s ease;
+            box-shadow: 0 0 15px var(--viettel-red-glow);
+        }
+        
+        .progress-markers {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: space-between;
+        }
+        
+        .marker {
+            width: 2px; height: 100%;
+            background: rgba(9,9,11,0.8);
+        }
+
+        .highlight { color: #fff; font-weight: 800; }
+        .text-viettel { color: var(--viettel-red); }
+        .text-blue { color: var(--accent-blue); }
+        
+        /* Dashboard Widget Style */
+        .widget {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .widget:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.1);
+        }
+        .widget-title {
+            color: var(--accent-blue);
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .widget-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #fff;
+        }
+        .widget-status {
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .status-good { color: #10b981; }
+        .status-warn { color: #f59e0b; }
+        .status-bad { color: var(--viettel-red); }
+
+        .subtitles-container {
+            display: none;
+        }
+        
+        .chat-bubble {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            border-bottom-left-radius: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            color: #e2e8f0;
+        }
+        .chat-bubble i { color: var(--accent-blue); }
+
+        /* Responsive scaling moved to JS */
+    </style>
+</head>
+<body>
+
+    <div class="bg-container"></div>
+    <div class="bg-overlay"></div>
+    <div class="blob red"></div>
+    <div class="blob blue"></div>
+
+    <div class="header">
+        <div class="logo">
+            <i data-lucide="boxes" style="width: 28px; height: 28px;"></i>
+            VIETTEL <span>SMARTOPS KV3</span>
+        </div>
+        <div style="font-size: 1rem; color: var(--text-muted); font-weight: 600; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
+            <div style="width: 8px; height: 8px; background: var(--viettel-red); border-radius: 50%; box-shadow: 0 0 10px var(--viettel-red);"></div>
+            AI FIRST DIGITAL OPERATIONS CENTER
+        </div>
+    </div>
+
+    <div class="slide-container" id="slideContainer">
+        <!-- Slides injected via JS -->
+    </div>
+
+    <div class="subtitles-container">
+        <div class="subtitle-text" id="subtitleText"></div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-outline" id="prevBtn">
+            <i data-lucide="chevron-left"></i> Trước
+        </button>
+        
+        <button class="btn" id="playPauseBtn">
+            <i data-lucide="play" id="playIcon"></i>
+            <i data-lucide="pause" id="pauseIcon" style="display:none;"></i>
+            <span id="playPauseText">Auto Play Voice</span>
+        </button>
+
+        <div class="progress-bar-container" id="progressContainer">
+            <div class="progress-bar" id="progressBar"></div>
+            <div class="progress-markers" id="progressMarkers"></div>
+        </div>
+
+        <button class="btn btn-outline" id="nextBtn">
+            Tiếp <i data-lucide="chevron-right"></i>
+        </button>
+    </div>
+
+    <script>
+        const scenesData = [
+            {
+                title: "BÀI TOÁN ĐIỀU HÀNH MỚI",
+                subtitle: "Khối lượng quản lý khổng lồ & Dữ liệu phân tán",
+                content: `
+                    <div class="grid-2">
+                        <div class="glass flex-col animate-in" style="--delay: 0.1s">
+                            <h3><i data-lucide="network"></i> TTKTKV3 hiện đang quản lý:</h3>
+                            <ul class="icon-list">
+                                <li><i data-lucide="map"></i> <span>Chất lượng dịch vụ <strong class="highlight">08 tỉnh</strong> phía Nam</span></li>
+                                <li><i data-lucide="server"></i> <span><strong class="highlight">03</strong> Tổng trạm Khu vực, <strong class="highlight">36</strong> Tổng trạm tỉnh</span></li>
+                                <li><i data-lucide="cpu"></i> <span>Hàng <strong class="highlight">trăm nghìn</strong> phần tử mạng, <strong class="highlight">chục nghìn</strong> nhà trạm</span></li>
+                                <li><i data-lucide="route"></i> <span>Hàng <strong class="highlight">trăm nghìn km</strong> cáp quang</span></li>
+                                <li><i data-lucide="target"></i> <span>Hàng <strong class="highlight">trăm</strong> chương trình, dự án trọng điểm</span></li>
+                                <li><i data-lucide="users"></i> <span><strong class="highlight">305</strong> CBCNV</span></li>
+                            </ul>
+                        </div>
+                        <div class="flex-col">
+                            <div class="glass animate-in" style="--delay: 0.3s">
+                                <h3><i data-lucide="database"></i> Dữ liệu phân tán trên nhiều hệ thống:</h3>
+                                <div class="tags mt-2">
+                                    <span class="tag"><i data-lucide="layers"></i>GNOC</span>
+                                    <span class="tag"><i data-lucide="layers"></i>IMES</span>
+                                    <span class="tag"><i data-lucide="layers"></i>NIMS</span>
+                                    <span class="tag"><i data-lucide="layers"></i>IPMS4.0</span>
+                                    <span class="tag"><i data-lucide="layers"></i>EMS/NMS</span>
+                                    <span class="tag"><i data-lucide="layers"></i>vDCIM</span>
+                                    <span class="tag"><i data-lucide="file-spreadsheet"></i>Excel</span>
+                                </div>
+                            </div>
+                            <div class="glass animate-in" style="--delay: 0.5s; border-color: var(--glass-border-highlight); background: rgba(238,0,51,0.05);">
+                                <h3 class="text-viettel"><i data-lucide="alert-triangle"></i> Điều này dẫn tới:</h3>
+                                <ul class="icon-list mt-2">
+                                    <li><i data-lucide="eye-off"></i> BGĐ chưa có góc nhìn thống nhất</li>
+                                    <li><i data-lucide="trending-down"></i> Khó dự báo và cảnh báo sớm</li>
+                                    <li><i data-lucide="bar-chart-2"></i> Khó đánh giá hiệu suất</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "NHỮNG CÂU HỎI TỪ BGĐ",
+                subtitle: "Mong muốn quản trị tức thời",
+                content: `
+                    <div class="glass flex-col animate-in" style="max-width: 900px; margin: 0 auto; --delay: 0.1s">
+                        <h3 style="font-size: 1.8rem; justify-content: center; margin-bottom: 2rem;">
+                            <i data-lucide="help-circle" style="width: 32px; height: 32px;"></i> Những câu hỏi mà BGĐ luôn muốn biết:
+                        </h3>
+                        <div class="grid-2" style="gap: 1.5rem;">
+                            <div class="chat-bubble animate-in" style="--delay: 0.2s"><i data-lucide="activity"></i> Tỉnh nào QoS thấp nhất?</div>
+                            <div class="chat-bubble animate-in" style="--delay: 0.3s"><i data-lucide="shield-alert"></i> Tổng trạm nào đang rủi ro?</div>
+                            <div class="chat-bubble animate-in" style="--delay: 0.4s"><i data-lucide="target"></i> KPI nào có nguy cơ không đạt?</div>
+                            <div class="chat-bubble animate-in" style="--delay: 0.5s"><i data-lucide="clock"></i> Dự án nào chậm tiến độ?</div>
+                            <div class="chat-bubble animate-in" style="--delay: 0.6s"><i data-lucide="battery-warning"></i> Ai đang quá tải?</div>
+                            <div class="chat-bubble animate-in" style="--delay: 0.7s"><i data-lucide="award"></i> Ai là nhân tài?</div>
+                        </div>
+                        <div class="mt-4 animate-in" style="border-top: 1px solid var(--glass-border); padding-top: 2rem; text-align: center; --delay: 0.9s">
+                            <p style="font-size: 1.2rem; color: var(--text-muted);">
+                                Hiện nay, muốn có câu trả lời, phải mở <span class="highlight">rất nhiều hệ thống</span>, <span class="highlight">báo cáo</span>, và <span class="highlight">file Excel</span>.
+                            </p>
+                            <h3 style="margin-top: 1.5rem; justify-content: center; font-size: 1.6rem; color: #fff;">
+                                <i data-lucide="zap"></i> TTKTKV3 cần một <span class="text-viettel" style="margin-left: 8px;">nền tảng điều hành thống nhất</span>.
+                            </h3>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "SMARTOPS KV3 RA ĐỜI",
+                subtitle: "Từ Tác nghiệp đến Quản trị",
+                content: `
+                    <div style="display: flex; align-items: center; justify-content: space-between; height: 100%; gap: 2rem;">
+                        <div class="glass flex-col animate-in" style="flex: 1; --delay: 0.1s">
+                            <h3 style="color: var(--text-muted);"><i data-lucide="settings" style="color: var(--text-muted)"></i> Hệ thống hiện hữu</h3>
+                            <div class="tags mt-2 mb-2">
+                                <span class="tag">GNOC</span><span class="tag">IMES</span><span class="tag">NIMS</span><span class="tag">vDCIM</span>
+                            </div>
+                            <div class="text-center" style="font-size: 2.2rem; font-weight: 800; color: var(--text-muted); margin: 1rem 0;">
+                                SYSTEM OF <br><span class="text-blue">OPERATION</span>
+                            </div>
+                            <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; text-align: center;">
+                                <i data-lucide="info" style="display: inline-block; vertical-align: middle; margin-right: 5px;"></i>
+                                SmartOps <strong style="color:white;">không thay thế</strong> các hệ thống này.
+                            </div>
+                        </div>
+                        
+                        <div class="flex-center flow-arrow animate-in" style="flex-shrink: 0; --delay: 0.3s">
+                            <i data-lucide="arrow-right" style="width: 48px; height: 48px;"></i>
+                        </div>
+
+                        <div class="glass flex-col animate-in" style="flex: 1; --delay: 0.5s; border-color: var(--viettel-red); box-shadow: 0 0 40px rgba(238,0,51,0.15);">
+                            <h3 class="text-viettel"><i data-lucide="cpu"></i> SmartOps KV3</h3>
+                            <div class="text-center" style="font-size: 2.2rem; font-weight: 800; color: #fff; margin: 1rem 0;">
+                                SYSTEM OF <br><span class="text-viettel">MANAGEMENT</span>
+                            </div>
+                            <ul class="icon-list mt-2">
+                                <li><i data-lucide="database"></i> Hợp nhất dữ liệu</li>
+                                <li><i data-lucide="users"></i> Kết nối con người</li>
+                                <li><i data-lucide="git-merge"></i> Chuẩn hóa quy trình</li>
+                                <li><i data-lucide="clock"></i> Điều hành thời gian thực</li>
+                                <li><i data-lucide="bot"></i> <strong class="highlight text-viettel">AI hỗ trợ ra quyết định</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "KIẾN TRÚC TỔNG THỂ",
+                subtitle: "Digital Operation Governance Platform",
+                content: `
+                    <div style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 900px; margin: 0 auto; gap: 0.3rem;">
+                        <div class="glass text-center animate-in" style="width: 100%; background: rgba(238,0,51,0.15); border-color: var(--viettel-red); padding: 1rem; --delay: 0.1s">
+                            <h3 style="margin: 0; justify-content: center;"><i data-lucide="monitor"></i> Executive Cockpit</h3>
+                        </div>
+                        <div class="flow-arrow animate-in" style="--delay: 0.2s"><i data-lucide="arrow-down" style="height: 18px;"></i></div>
+                        
+                        <div class="glass text-center animate-in" style="width: 100%; padding: 1rem; --delay: 0.3s">
+                            <h3 style="margin-bottom: 0.5rem; justify-content: center;"><i data-lucide="cpu"></i> SmartOps Core</h3>
+                            <div class="tags" style="justify-content: center; font-size: 0.9rem;">
+                                <span class="tag blue"><i data-lucide="briefcase"></i> Work Mgt</span>
+                                <span class="tag blue"><i data-lucide="git-commit"></i> Workflow</span>
+                                <span class="tag blue"><i data-lucide="bar-chart"></i> Performance</span>
+                                <span class="tag blue"><i data-lucide="alert-circle"></i> Risk & Issue</span>
+                                <span class="tag red-solid"><i data-lucide="bot"></i> AI Copilot</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow animate-in" style="--delay: 0.4s"><i data-lucide="arrow-down" style="height: 18px;"></i></div>
+                        
+                        <div class="glass text-center animate-in" style="width: 100%; padding: 1rem; --delay: 0.5s">
+                            <h3 style="margin-bottom: 0.5rem; justify-content: center;"><i data-lucide="layout-grid"></i> Domain Apps</h3>
+                            <div class="tags" style="justify-content: center;">
+                                <span class="tag"><i data-lucide="server"></i> vDCIM</span>
+                                <span class="tag"><i data-lucide="map-pin"></i> TerritoryOps</span>
+                                <span class="tag"><i data-lucide="radio-tower"></i> InfraOps</span>
+                                <span class="tag"><i data-lucide="camera"></i> AuditOps</span>
+                                <span class="tag"><i data-lucide="users"></i> AdminOps</span>
+                            </div>
+                        </div>
+                        <div class="flow-arrow animate-in" style="--delay: 0.6s"><i data-lucide="arrow-down" style="height: 18px;"></i></div>
+                        
+                        <div class="glass text-center animate-in" style="width: 100%; background: rgba(255,255,255,0.02); padding: 1rem; --delay: 0.7s">
+                            <h3 style="margin: 0; justify-content: center; color: var(--text-muted);"><i data-lucide="database" style="color:var(--text-muted)"></i> Data Integration Hub & Existing Systems</h3>
+                        </div>
+                        
+                        <div class="text-center animate-in" style="margin-top: 0.5rem; --delay: 0.9s; background: rgba(56, 189, 248, 0.1); padding: 0.8rem 1.5rem; border-radius: 30px; border: 1px solid rgba(56,189,248,0.3);">
+                            <span class="highlight text-blue" style="font-size: 1.1rem;"><i data-lucide="zap" style="display:inline-block; vertical-align:middle; width: 18px;"></i> 95% dữ liệu được tự động đồng bộ - Hạn chế tối đa nhập tay</span>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "EXECUTIVE COCKPIT",
+                subtitle: "Một màn hình duy nhất cho Ban Giám đốc",
+                content: `
+                    <div class="glass flex-col animate-in" style="height: 100%; --delay: 0.1s">
+                        <div class="grid-4" style="gap: 1.5rem;">
+                            <!-- Widgets -->
+                            <div class="widget animate-in" style="--delay: 0.2s">
+                                <div class="widget-title"><i data-lucide="target"></i> Strategic Targets</div>
+                                <div class="widget-value">98.5%</div>
+                                <div class="widget-status status-good"><i data-lucide="trending-up" width="16"></i> Vượt tiến độ</div>
+                            </div>
+                            <div class="widget animate-in" style="--delay: 0.3s">
+                                <div class="widget-title"><i data-lucide="activity"></i> Territory QoS</div>
+                                <div class="widget-value status-good">TỐT</div>
+                                <div class="widget-status status-good"><i data-lucide="check-circle" width="16"></i> Đạt chuẩn</div>
+                            </div>
+                            <div class="widget animate-in" style="--delay: 0.4s">
+                                <div class="widget-title"><i data-lucide="server-crash"></i> Network Health</div>
+                                <div class="widget-value status-bad">3</div>
+                                <div class="widget-status status-bad"><i data-lucide="alert-triangle" width="16"></i> Cảnh báo đỏ</div>
+                            </div>
+                            <div class="widget animate-in" style="--delay: 0.5s">
+                                <div class="widget-title"><i data-lucide="radio-tower"></i> Tech Hubs</div>
+                                <div class="widget-value">39/39</div>
+                                <div class="widget-status status-good"><i data-lucide="wifi" width="16"></i> Online</div>
+                            </div>
+                            
+                            <div class="widget animate-in" style="--delay: 0.6s">
+                                <div class="widget-title"><i data-lucide="hard-hat"></i> Infrastructure</div>
+                                <div class="widget-value">85%</div>
+                                <div class="widget-status"><i data-lucide="clock" width="16"></i> Tiến độ dự án</div>
+                            </div>
+                            <div class="widget animate-in" style="--delay: 0.7s">
+                                <div class="widget-title"><i data-lucide="shield-alert"></i> Issue & Risk</div>
+                                <div class="widget-value status-warn">12</div>
+                                <div class="widget-status status-warn"><i data-lucide="alert-circle" width="16"></i> Rủi ro đang mở</div>
+                            </div>
+                            <div class="widget animate-in" style="--delay: 0.8s">
+                                <div class="widget-title"><i data-lucide="briefcase"></i> Work Mgt</div>
+                                <div class="widget-value">1,452</div>
+                                <div class="widget-status"><i data-lucide="list-todo" width="16"></i> Jobs đang xử lý</div>
+                            </div>
+                            <div class="widget animate-in" style="--delay: 0.9s; border-color: var(--viettel-red); background: rgba(238,0,51,0.1); animation: pulse-glow 2s infinite;">
+                                <div class="widget-title text-viettel"><i data-lucide="bot"></i> AI Insight</div>
+                                <div class="widget-value" style="font-size: 1.5rem; margin-top: 5px;">Dự báo QoS HCM giảm</div>
+                                <div class="widget-status status-bad"><i data-lucide="trending-down" width="16"></i> Phân tích Realtime</div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4 animate-in" style="--delay: 1.1s">
+                            <h3 style="justify-content: center; font-size: 1.4rem;">
+                                <i data-lucide="eye"></i> BGĐ có thể biết toàn bộ sức khỏe địa bàn, KPI, SLA, Tải công việc và Rủi ro ngay tức thì.
+                            </h3>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "USE CASE 1: SMARTOPS CORE",
+                subtitle: "Quản lý công việc và tải công việc",
+                content: `
+                    <div class="grid-2">
+                        <div class="flex-col glass animate-in" style="--delay: 0.1s">
+                            <h3><i data-lucide="git-branch"></i> Luồng công việc tự động</h3>
+                            <div class="flex-col" style="gap: 5px; margin-top: 1rem;">
+                                <div class="tag" style="justify-content:center; padding: 1rem; font-size:1.1rem;"><i data-lucide="file-text"></i> Work Order (WO)</div>
+                                <div class="flow-arrow"><i data-lucide="arrow-down"></i></div>
+                                <div class="tag" style="justify-content:center; padding: 1rem; font-size:1.1rem;"><i data-lucide="file-check"></i> Work Item (WI)</div>
+                                <div class="flow-arrow"><i data-lucide="arrow-down"></i></div>
+                                <div class="tag" style="justify-content:center; padding: 1rem; font-size:1.1rem;"><i data-lucide="check-square"></i> Task</div>
+                                <div class="flow-arrow"><i data-lucide="arrow-down"></i></div>
+                                <div class="tag blue" style="justify-content:center; padding: 1rem; font-size:1.1rem;"><i data-lucide="activity"></i> Workload & Performance</div>
+                                <div class="flow-arrow"><i data-lucide="arrow-down"></i></div>
+                                <div class="tag red-solid" style="justify-content:center; padding: 1rem; font-size:1.1rem;"><i data-lucide="award"></i> Reward (Khen thưởng)</div>
+                            </div>
+                        </div>
+                        <div class="glass flex-col justify-center animate-in" style="--delay: 0.3s; border-color: var(--viettel-red);">
+                            <h3 class="text-viettel"><i data-lucide="bot"></i> AI Trả lời ngay:</h3>
+                            <ul class="icon-list" style="margin-top: 1rem; margin-bottom: 2rem;">
+                                <li><i data-lucide="battery-warning"></i> <span style="color: white; font-size: 1.3rem;">Ai đang quá tải?</span></li>
+                                <li><i data-lucide="battery-charging"></i> <span style="color: white; font-size: 1.3rem;">Ai thấp tải?</span></li>
+                                <li><i data-lucide="users"></i> <span style="color: white; font-size: 1.3rem;">Phòng nào cần san tải?</span></li>
+                            </ul>
+                            <div class="p-4 text-center" style="background: rgba(56,189,248,0.1); border-radius: 12px; border: 1px solid rgba(56,189,248,0.3);">
+                                <strong class="text-blue" style="font-size: 1.2rem;">Tải công việc, Hiệu suất, Thi đua</strong><br><br>
+                                <span style="font-size: 1.6rem; font-weight: 800; color: #fff; letter-spacing: 1px;"><i data-lucide="zap" style="display:inline-block; vertical-align:middle; color:var(--accent-blue)"></i> ĐƯỢC ĐÁNH GIÁ TỰ ĐỘNG</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "USE CASE 2: SMART INFRAOPS",
+                subtitle: "Điều hành phát triển trạm BTS",
+                content: `
+                    <div class="glass flex-col animate-in" style="--delay: 0.1s">
+                        <h3 style="justify-content: center; margin-bottom: 1rem;"><i data-lucide="route"></i> Quy trình số hóa xuyên suốt</h3>
+                        <div class="flex-center" style="gap: 5px; flex-wrap: wrap; margin-bottom: 3rem;">
+                            <span class="tag blue"><i data-lucide="map"></i> Khảo sát</span><span class="flow-arrow"><i data-lucide="chevron-right"></i></span>
+                            <span class="tag blue"><i data-lucide="pen-tool"></i> Thiết kế</span><span class="flow-arrow"><i data-lucide="chevron-right"></i></span>
+                            <span class="tag blue"><i data-lucide="check-circle"></i> Phê duyệt</span><span class="flow-arrow"><i data-lucide="chevron-right"></i></span>
+                            <span class="tag"><i data-lucide="hard-hat"></i> Thi công</span><span class="flow-arrow"><i data-lucide="chevron-right"></i></span>
+                            <span class="tag"><i data-lucide="clipboard-check"></i> Nghiệm thu</span><span class="flow-arrow"><i data-lucide="chevron-right"></i></span>
+                            <span class="tag"><i data-lucide="key"></i> Bàn giao</span><span class="flow-arrow"><i data-lucide="chevron-right"></i></span>
+                            <span class="tag red-solid"><i data-lucide="badge-check"></i> Quyết toán</span>
+                        </div>
+                        
+                        <div class="grid-2">
+                            <div class="animate-in" style="--delay: 0.3s">
+                                <h3 style="color: #f59e0b;"><i data-lucide="bell-ring" style="color: #f59e0b;"></i> Cảnh báo AI thời gian thực</h3>
+                                <div class="chat-bubble mt-2" style="border-color: #f59e0b; background: rgba(245,158,11,0.1);"><i data-lucide="clock" style="color:#f59e0b"></i> Tỉnh nào chậm tiến độ?</div>
+                                <div class="chat-bubble" style="border-color: #f59e0b; background: rgba(245,158,11,0.1);"><i data-lucide="alert-triangle" style="color:#f59e0b"></i> Nhà thầu nào có rủi ro cao?</div>
+                                <div class="chat-bubble" style="border-color: #f59e0b; background: rgba(245,158,11,0.1);"><i data-lucide="siren" style="color:#f59e0b"></i> Dự án nào cần ưu tiên xử lý ngay?</div>
+                            </div>
+                            <div class="flex-center animate-in" style="--delay: 0.5s">
+                                <div style="width: 220px; height: 220px; border-radius: 50%; border: 12px solid rgba(255,255,255,0.05); border-top-color: var(--viettel-red); border-right-color: var(--viettel-red); display: flex; align-items:center; justify-content:center; flex-direction: column; box-shadow: inset 0 0 30px rgba(238,0,51,0.2), 0 0 30px rgba(238,0,51,0.2);">
+                                    <i data-lucide="shield-check" style="width: 40px; height: 40px; color: var(--viettel-red); margin-bottom: 10px;"></i>
+                                    <span style="font-size: 3rem; font-weight: 800; color: white; line-height: 1;">100%</span>
+                                    <span style="color: var(--text-muted); font-size: 1rem; text-transform: uppercase; letter-spacing: 2px; margin-top: 5px;">Kiểm soát</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "USE CASE 3: SMART AUDITOPS",
+                subtitle: "Kiểm soát VHKT bằng AI Vision",
+                content: `
+                    <div class="grid-2">
+                        <div class="glass flex-col animate-in" style="--delay: 0.1s">
+                            <h3><i data-lucide="refresh-cw"></i> Quy trình khép kín</h3>
+                            <ul class="icon-list mt-2">
+                                <li><i data-lucide="camera"></i> <span>CBCNV chụp ảnh hiện trường</span></li>
+                                <li><i data-lucide="scan-eye" style="color:var(--accent-blue)"></i> <span class="highlight text-blue">AI Vision tự động phân tích</span></li>
+                                <li><i data-lucide="file-warning"></i> <span>Phát hiện lỗi & Tạo Audit Record</span></li>
+                                <li><i data-lucide="hammer"></i> <span>Phát hành CAPA (Hành động khắc phục)</span></li>
+                                <li><i data-lucide="file-plus-2"></i> <span>Sinh Work Order tự động</span></li>
+                                <li><i data-lucide="check-circle-2"></i> <span>Nghiệm thu & Đóng việc</span></li>
+                            </ul>
+                        </div>
+                        <div class="glass flex-col animate-in" style="--delay: 0.3s; background: rgba(238,0,51,0.05); border-color: var(--viettel-red);">
+                            <h3 class="text-viettel"><i data-lucide="focus"></i> AI tự động nhận diện:</h3>
+                            <div class="tags mt-2">
+                                <span class="tag"><i data-lucide="cable"></i> Mỹ quan cáp</span>
+                                <span class="tag"><i data-lucide="book-x"></i> Sai SOP</span>
+                                <span class="tag"><i data-lucide="flame"></i> Lỗi PCCC</span>
+                                <span class="tag"><i data-lucide="package-x"></i> Thiếu vật tư</span>
+                                <span class="tag"><i data-lucide="x-octagon"></i> Sai tiêu chuẩn VHKT</span>
+                            </div>
+                            <div class="mt-4 p-4" style="background: rgba(0,0,0,0.4); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                                    <span style="font-size: 1.1rem; color: var(--text-muted);"><i data-lucide="activity" style="display:inline; width:16px;"></i> Health Score</span>
+                                    <span class="tag red-solid" style="font-size: 0.8rem; padding: 0.2rem 0.8rem;">Realtime</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                                    <span style="font-size: 1.1rem; color: var(--text-muted);"><i data-lucide="clipboard-list" style="display:inline; width:16px;"></i> Audit Score</span>
+                                    <span class="tag red-solid" style="font-size: 0.8rem; padding: 0.2rem 0.8rem;">Realtime</span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center;">
+                                    <span style="font-size: 1.1rem; color: var(--text-muted);"><i data-lucide="clock" style="display:inline; width:16px;"></i> CAPA Overdue</span>
+                                    <span class="tag red-solid" style="font-size: 0.8rem; padding: 0.2rem 0.8rem;">Realtime</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "USE CASE 4: SMART ADMINOPS",
+                subtitle: "AI nhận biết hành vi và tâm lý nhân sự",
+                content: `
+                    <div class="glass animate-in" style="height: 100%; display: flex; flex-direction: column; --delay: 0.1s">
+                        <h3 class="text-center mb-4" style="justify-content: center;"><i data-lucide="pie-chart"></i> Phân tích dữ liệu Đa chiều</h3>
+                        <div class="flex-center" style="gap: 1rem; flex-wrap: wrap; margin-bottom: 2.5rem;">
+                            <span class="tag blue"><i data-lucide="briefcase"></i> Workload</span>
+                            <span class="tag blue"><i data-lucide="trending-up"></i> Performance</span>
+                            <span class="tag blue"><i data-lucide="alert-circle"></i> Issues</span>
+                            <span class="tag blue"><i data-lucide="calendar-check"></i> Attendance</span>
+                            <span class="tag blue"><i data-lucide="star"></i> Contribution</span>
+                        </div>
+                        
+                        <div class="grid-2" style="flex: 1;">
+                            <div class="widget animate-in" style="background: rgba(245,158,11,0.1); border-color: #f59e0b; --delay: 0.3s">
+                                <h4 style="color: #f59e0b; margin-bottom: 1rem; font-size: 1.3rem; display: flex; align-items: center; gap: 8px;"><i data-lucide="heart-crack"></i> Cảnh báo Rủi ro Tâm lý</h4>
+                                <ul class="icon-list">
+                                    <li><i data-lucide="battery-warning" style="color:#f59e0b"></i> <span>Nguy cơ Burnout (Kiệt sức)</span></li>
+                                    <li><i data-lucide="brain-circuit" style="color:#f59e0b"></i> <span>Nguy cơ Stress cao</span></li>
+                                    <li><i data-lucide="life-buoy" style="color:#f59e0b"></i> <span>Dấu hiệu cần hỗ trợ (Need Support)</span></li>
+                                </ul>
+                            </div>
+                            <div class="widget animate-in" style="background: rgba(16,185,129,0.1); border-color: #10b981; --delay: 0.5s">
+                                <h4 style="color: #10b981; margin-bottom: 1rem; font-size: 1.3rem; display: flex; align-items: center; gap: 8px;"><i data-lucide="gem"></i> Nhận diện Nhân tài</h4>
+                                <ul class="icon-list">
+                                    <li><i data-lucide="zap" style="color:#10b981"></i> <span>High Performer (Hiệu suất cao)</span></li>
+                                    <li><i data-lucide="users" style="color:#10b981"></i> <span>Talent Pool (Nhóm nhân tài)</span></li>
+                                    <li><i data-lucide="crown" style="color:#10b981"></i> <span>Potential Leader (Lãnh đạo tiềm năng)</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4 p-4 animate-in" style="background: var(--viettel-red); border-radius: 12px; box-shadow: 0 10px 30px var(--viettel-red-glow); --delay: 0.7s">
+                            <h3 style="color: white; margin: 0; font-size: 1.6rem; justify-content: center; letter-spacing: 1px;">
+                                <i data-lucide="map" style="color: white;"></i> Ban Giám Đốc sở hữu bản đồ TALENT MAP Realtime
+                            </h3>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "AI FIRST DIGITAL OPS CENTER",
+                subtitle: "Giao tiếp tự nhiên với hệ thống",
+                content: `
+                    <div class="grid-2">
+                        <div class="glass flex-col animate-in" style="justify-content: flex-end; background: transparent; border: none; box-shadow: none; --delay: 0.1s">
+                            <div class="chat-bubble animate-in" style="--delay: 0.2s"><i data-lucide="user"></i> Tỉnh nào QoS thấp nhất tuần này?</div>
+                            <div class="chat-bubble animate-in" style="--delay: 0.3s"><i data-lucide="user"></i> Tổng trạm nào có rủi ro sập nguồn cao nhất?</div>
+                            <div class="chat-bubble animate-in" style="--delay: 0.4s"><i data-lucide="user"></i> Dự án ngầm hóa nào đang chậm tiến độ?</div>
+                            <div class="chat-bubble animate-in" style="--delay: 0.5s"><i data-lucide="user"></i> Phòng nào đang phải làm thêm giờ nhiều nhất?</div>
+                        </div>
+                        <div class="glass flex-col animate-in" style="border-color: var(--viettel-red); background: rgba(238,0,51,0.05); box-shadow: 0 0 50px rgba(238,0,51,0.1); --delay: 0.7s">
+                            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 1.5rem; border-bottom: 1px solid rgba(238,0,51,0.3); padding-bottom: 1rem;">
+                                <div style="width: 50px; height: 50px; background: var(--viettel-red); border-radius: 12px; display:flex; align-items:center; justify-content:center; box-shadow: 0 5px 15px var(--viettel-red-glow);">
+                                    <i data-lucide="bot" style="color: white; width: 30px; height: 30px;"></i>
+                                </div>
+                                <h3 style="margin: 0; font-size: 1.8rem; text-shadow: 0 0 10px rgba(238,0,51,0.5);">AI SmartOps trả lời ngay:</h3>
+                            </div>
+                            <ul class="icon-list" style="gap: 1.5rem;">
+                                <li><i data-lucide="database"></i> <span><strong class="highlight text-blue">Dữ liệu chi tiết</strong> tức thì</span></li>
+                                <li><i data-lucide="search"></i> <span>Phân tích <strong class="highlight text-blue">Nguyên nhân</strong> gốc rễ</span></li>
+                                <li><i data-lucide="line-chart"></i> <span><strong class="highlight">Dự báo</strong> xu hướng tiếp theo</span></li>
+                                <li><i data-lucide="lightbulb"></i> <span>Đưa ra <strong class="highlight">Khuyến nghị</strong> hành động</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                title: "TẦM NHÌN TƯƠNG LAI",
+                subtitle: "Chuyển đổi số toàn diện công tác điều hành",
+                content: `
+                    <div class="glass flex-col text-center animate-in" style="align-items: center; --delay: 0.1s">
+                        <h2 style="font-size: 3rem; color: #fff; margin-bottom: 1rem; line-height: 1.2;">
+                            <span class="text-viettel" style="text-shadow: 0 0 20px var(--viettel-red-glow);">SMARTOPS KV3</span><br>
+                            <span style="font-size: 1.8rem; color: var(--text-muted); font-weight: 600; letter-spacing: 2px;">DIGITAL OPERATION GOVERNANCE PLATFORM</span>
+                        </h2>
+                        
+                        <div class="grid-3 mt-4" style="width: 100%; text-align: left; gap: 2rem;">
+                            <div class="widget animate-in" style="--delay: 0.3s">
+                                <h4 style="color: var(--text-muted); font-size: 1.1rem;"><i data-lucide="step-forward" style="display:inline; width:16px;"></i> Giai đoạn 1</h4>
+                                <div style="font-size: 1.2rem; color: var(--text-muted); margin-top: 1rem;">Từ điều hành thủ công</div>
+                                <div style="font-size: 1.3rem; font-weight: bold; color: var(--accent-blue); margin-top: 5px;"><i data-lucide="arrow-right" style="display:inline; width:18px;"></i> Điều hành theo Dữ liệu</div>
+                            </div>
+                            <div class="widget animate-in" style="--delay: 0.5s">
+                                <h4 style="color: var(--text-muted); font-size: 1.1rem;"><i data-lucide="step-forward" style="display:inline; width:16px;"></i> Giai đoạn 2</h4>
+                                <div style="font-size: 1.2rem; color: var(--text-muted); margin-top: 1rem;">Từ phản ứng sự cố</div>
+                                <div style="font-size: 1.3rem; font-weight: bold; color: var(--accent-blue); margin-top: 5px;"><i data-lucide="arrow-right" style="display:inline; width:18px;"></i> Chủ động Dự báo</div>
+                            </div>
+                            <div class="widget animate-in" style="border-color: var(--viettel-red); background: rgba(238,0,51,0.1); box-shadow: 0 0 30px rgba(238,0,51,0.2); --delay: 0.7s">
+                                <h4 style="color: var(--viettel-red); font-size: 1.1rem;"><i data-lucide="step-forward" style="display:inline; width:16px;"></i> Giai đoạn 3</h4>
+                                <div style="font-size: 1.2rem; color: #fff; margin-top: 1rem;">Từ xem Dashboard</div>
+                                <div style="font-size: 1.4rem; font-weight: bold; color: #fff; margin-top: 5px;"><i data-lucide="arrow-right" style="display:inline; width:18px;"></i> AI Hỗ trợ ra quyết định</div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 p-4 animate-in" style="width: 100%; border-radius: 16px; background: linear-gradient(90deg, rgba(238,0,51,0.1), rgba(238,0,51,0.4), rgba(238,0,51,0.1)); border: 1px solid rgba(238,0,51,0.5); --delay: 1s">
+                            <div style="font-size: 1.8rem; font-weight: 800; color: #fff; letter-spacing: 4px; display: flex; justify-content: center; gap: 20px;">
+                                <span>DỰ BÁO</span> • <span>CHỦ ĐỘNG</span> • <span>TỰ ĐỘNG</span> • <span>TỰ TRỊ</span>
+                            </div>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        let currentScene = 0;
+        let isPlaying = false;
+        let isAutoPlaying = false;
+        let slideTimeout = null;
+
+        const container = document.getElementById('slideContainer');
+        const subtitleText = document.getElementById('subtitleText');
+        const progressBar = document.getElementById('progressBar');
+        const progressMarkers = document.getElementById('progressMarkers');
+        
+        // Initialize slides
+        function initSlides() {
+            scenesData.forEach((scene, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                slide.id = 'slide-' + index;
+                slide.innerHTML = `
+                    <div>
+                        <div class="slide-subtitle">0${index + 1} // ${scene.subtitle}</div>
+                        <h2 class="slide-title">${scene.title}</h2>
+                    </div>
+                    ${scene.content}
+                `;
+                container.appendChild(slide);
+
+                // Create progress markers
+                if (index > 0) {
+                    const marker = document.createElement('div');
+                    marker.className = 'marker';
+                    marker.style.left = `${(index / scenesData.length) * 100}%`;
+                    progressMarkers.appendChild(marker);
+                }
+            });
+
+            showSlide(0);
+        }
+
+        function showSlide(index) {
+            // Remove active from all
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            
+            // Add active to current
+            const slide = document.getElementById('slide-' + index);
+            if(slide) {
+                slide.classList.add('active');
+                lucide.createIcons(); // Re-initialize icons for newly shown slide content
+            }
+            
+            // Update progress bar
+            const progress = ((index) / (scenesData.length - 1)) * 100;
+            progressBar.style.width = `${progress}%`;
+
+            // Handle audio/tts if auto playing
+            if (isAutoPlaying) {
+                playAudioForSlide(index);
+            } else {
+                stopAudio();
+            }
+        }
+
+        function nextSlide() {
+            if (currentScene < scenesData.length - 1) {
+                currentScene++;
+                showSlide(currentScene);
+            } else {
+                toggleAutoPlay(); // End presentation
+            }
+        }
+
+        function prevSlide() {
+            if (currentScene > 0) {
+                currentScene--;
+                showSlide(currentScene);
+            }
+        }
+
+        // --- Audio Implementation ---
+        
+        function playAudioForSlide(index) {
+            stopAudio();
+            clearTimeout(slideTimeout);
+            
+            subtitleText.classList.add('visible');
+
+            // Load real audio file (e.g. audio/scene_1.mp3)
+            const audioUrl = `audio/scene_${index + 1}.mp3`;
+            const audio = new Audio(audioUrl);
+            
+            window.currentAudio = audio; // Keep reference to stop it later
+            
+            audio.oncanplaythrough = () => {
+                if(window.currentAudio === audio) {
+                    audio.oncanplaythrough = null;
+                    audio.play();
+                }
+            };
+
+            audio.onended = () => {
+                if(isAutoPlaying) {
+                    slideTimeout = setTimeout(nextSlide, 1000);
+                }
+            };
+
+            audio.onerror = () => {
+                console.warn("Audio file not found: " + audioUrl);
+                if(isAutoPlaying) {
+                    slideTimeout = setTimeout(nextSlide, 5000);
+                }
+            };
+        }
+
+        function stopAudio() {
+            if(window.currentAudio) {
+                window.currentAudio.pause();
+                window.currentAudio.currentTime = 0;
+                window.currentAudio = null;
+            }
+            clearTimeout(slideTimeout);
+            subtitleText.classList.remove('visible');
+        }
+
+        function toggleAutoPlay() {
+            isAutoPlaying = !isAutoPlaying;
+            const playIcon = document.getElementById('playIcon');
+            const pauseIcon = document.getElementById('pauseIcon');
+            const playPauseText = document.getElementById('playPauseText');
+
+            if (isAutoPlaying) {
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'inline-block';
+                playPauseText.textContent = 'Dừng (Pause)';
+                
+                // If we are at the end and click play, restart
+                if (currentScene === scenesData.length - 1 && (!window.currentAudio || window.currentAudio.paused)) {
+                    currentScene = 0;
+                }
+                showSlide(currentScene);
+            } else {
+                playIcon.style.display = 'inline-block';
+                pauseIcon.style.display = 'none';
+                playPauseText.textContent = 'Auto Play Voice';
+                stopAudio();
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if(isAutoPlaying) stopAudio(); // pause current audio to jump
+            nextSlide();
+        });
+        
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if(isAutoPlaying) stopAudio();
+            prevSlide();
+        });
+
+        document.getElementById('playPauseBtn').addEventListener('click', toggleAutoPlay);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft') {
+                prevSlide();
+            }
+        });
+
+        // Setup Responsive Scaling
+        function resizeSlides() {
+            const container = document.getElementById('slideContainer');
+            if (!container) return;
+            
+            // Base resolution 1440x800
+            const scaleX = container.clientWidth / 1440;
+            const scaleY = container.clientHeight / 800;
+            const scale = Math.min(scaleX, scaleY) * 0.95; // 95% to leave a tiny padding
+            
+            document.documentElement.style.setProperty('--scale', scale);
+        }
+
+        window.addEventListener('resize', resizeSlides);
+        resizeSlides();
+
+        // Initialize
+        initSlides();
+        lucide.createIcons();
+
+    </script>
+</body>
+</html>
