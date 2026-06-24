@@ -708,6 +708,18 @@ const scenesData = [
         let currentScene = 0;
         let isAutoPlaying = false;
         let slideTimeout = null;
+        
+        let bgMusic = new Audio('audio/bg_music.mp3');
+        bgMusic.loop = true;
+        bgMusic.volume = 0.15; // Nhạc nền nhẹ nhàng (15% volume)
+        let bgMusicStarted = false;
+
+        function startBgMusic() {
+            if (!bgMusicStarted) {
+                bgMusic.play().catch(e => console.log("Bg music play failed or not found:", e));
+                bgMusicStarted = true;
+            }
+        }
 
         const container = document.getElementById('slideContainer');
         const progressBar = document.getElementById('progressBar');
@@ -756,6 +768,7 @@ const scenesData = [
         }
 
         function nextSlide() {
+            startBgMusic();
             if (currentScene < scenesData.length - 1) {
                 currentScene++;
                 showSlide(currentScene);
@@ -763,6 +776,7 @@ const scenesData = [
         }
 
         function prevSlide() {
+            startBgMusic();
             if (currentScene > 0) {
                 currentScene--;
                 showSlide(currentScene);
@@ -790,6 +804,7 @@ const scenesData = [
         }
 
         function toggleAutoPlay() {
+            startBgMusic();
             isAutoPlaying = !isAutoPlaying;
             document.getElementById('playIcon').style.display = isAutoPlaying ? 'none' : 'inline-block';
             document.getElementById('pauseIcon').style.display = isAutoPlaying ? 'inline-block' : 'none';
