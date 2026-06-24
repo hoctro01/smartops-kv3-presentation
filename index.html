@@ -718,7 +718,7 @@ const scenesData = [
                 subtitle: "Giao diện quản lý công việc và tải công việc",
                 content: `
                     <div class="glass flex-col animate-in" style="--delay: 0.1s; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 0; background: transparent; border: none; box-shadow: none;">
-                        <video controls style="width: 100%; max-height: 600px; height: auto; object-fit: contain; border-radius: 20px; border: 2px solid var(--hud-color); box-shadow: 0 0 50px rgba(0,243,255,0.3); margin-bottom: 2rem;">
+                        <video controls style="width: 100%; height: 520px; object-fit: contain; background: rgba(0,0,0,0.3); border-radius: 20px; border: 2px solid var(--hud-color); box-shadow: 0 0 50px rgba(0,243,255,0.3); margin-bottom: 2rem;">
                             <source src="video/1_smartops.mp4">
                             Trình duyệt không hỗ trợ Video.
                         </video>
@@ -731,7 +731,7 @@ const scenesData = [
                 subtitle: "Điều hành phát triển trạm BTS",
                 content: `
                     <div class="glass flex-col animate-in" style="--delay: 0.1s; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 0; background: transparent; border: none; box-shadow: none;">
-                        <video controls style="width: 100%; max-height: 600px; height: auto; object-fit: contain; border-radius: 20px; border: 2px solid var(--hud-color); box-shadow: 0 0 50px rgba(0,243,255,0.3); margin-bottom: 2rem;" poster="images/tech_intro.png">
+                        <video controls style="width: 100%; height: 520px; object-fit: contain; background: rgba(0,0,0,0.3); border-radius: 20px; border: 2px solid var(--hud-color); box-shadow: 0 0 50px rgba(0,243,255,0.3); margin-bottom: 2rem;" poster="images/tech_intro.png">
                             <source src="video/2_smartinfraops.mp4">
                             Trình duyệt không hỗ trợ Video.
                         </video>
@@ -744,7 +744,7 @@ const scenesData = [
                 subtitle: "Kiểm soát VHKT bằng AI Vision",
                 content: `
                     <div class="glass flex-col animate-in" style="--delay: 0.1s; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 0; background: transparent; border: none; box-shadow: none;">
-                        <video controls style="width: 100%; max-height: 600px; height: auto; object-fit: contain; border-radius: 20px; border: 2px solid var(--hud-color); box-shadow: 0 0 50px rgba(0,243,255,0.3); margin-bottom: 2rem;">
+                        <video controls style="width: 100%; height: 520px; object-fit: contain; background: rgba(0,0,0,0.3); border-radius: 20px; border: 2px solid var(--hud-color); box-shadow: 0 0 50px rgba(0,243,255,0.3); margin-bottom: 2rem;">
                             <source src="video/3_smartaudit.mp4">
                             Trình duyệt không hỗ trợ Video.
                         </video>
@@ -757,7 +757,7 @@ const scenesData = [
                 subtitle: "Phân tích hành vi & Talent Map",
                 content: `
                     <div class="glass flex-col animate-in" style="--delay: 0.1s; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 0; background: transparent; border: none; box-shadow: none;">
-                        <video controls style="width: 100%; max-height: 600px; height: auto; object-fit: contain; border-radius: 20px; border: 2px solid var(--hud-color); box-shadow: 0 0 50px rgba(0,243,255,0.3); margin-bottom: 2rem;">
+                        <video controls style="width: 100%; height: 520px; object-fit: contain; background: rgba(0,0,0,0.3); border-radius: 20px; border: 2px solid var(--hud-color); box-shadow: 0 0 50px rgba(0,243,255,0.3); margin-bottom: 2rem;">
                             <source src="video/4_smartadminops.mp4">
                             Trình duyệt không hỗ trợ Video.
                         </video>
@@ -825,6 +825,8 @@ const scenesData = [
             }
             progressBar.style.width = `${(index / (scenesData.length - 1)) * 100}%`;
 
+            document.querySelectorAll('video').forEach(v => { v.pause(); v.currentTime = 0; });
+
             if (isAutoPlaying) playAudioForSlide(index);
             else stopAudio();
         }
@@ -848,12 +850,25 @@ const scenesData = [
         function playAudioForSlide(index) {
             stopAudio();
             clearTimeout(slideTimeout);
+            
+            const slide = document.getElementById('slide-' + index);
+            const video = slide ? slide.querySelector('video') : null;
+            
+            if (video) {
+                video.play().catch(e => console.log(e));
+                video.onended = () => { if(isAutoPlaying) nextSlide(); };
+            }
+
             const audioUrl = `audio/scene_${index}.mp3`;
             const audio = new Audio(audioUrl);
             window.currentAudio = audio;
             audio.oncanplaythrough = () => { if(window.currentAudio === audio) { audio.oncanplaythrough = null; audio.play(); } };
-            audio.onended = () => { if(isAutoPlaying) slideTimeout = setTimeout(nextSlide, 1000); };
-            audio.onerror = () => { if(isAutoPlaying) slideTimeout = setTimeout(nextSlide, 4000); };
+            audio.onended = () => { 
+                if(isAutoPlaying && (!video || video.ended)) slideTimeout = setTimeout(nextSlide, 1000); 
+            };
+            audio.onerror = () => { 
+                if(isAutoPlaying && !video) slideTimeout = setTimeout(nextSlide, 4000); 
+            };
         }
 
         function stopAudio() {
@@ -863,6 +878,7 @@ const scenesData = [
                 window.currentAudio = null;
             }
             clearTimeout(slideTimeout);
+            document.querySelectorAll('video').forEach(v => v.pause());
         }
 
         function toggleAutoPlay() {
