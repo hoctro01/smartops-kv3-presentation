@@ -812,12 +812,12 @@ const scenesData = [
                 // Typewriter effect on title
                 const title = slide.querySelector('.slide-title');
                 if(title) {
-                    const text = title.getAttribute('data-text') || title.innerText;
+                    const text = title.getAttribute('data-text') || title.textContent;
                     title.setAttribute('data-text', text);
-                    title.innerText = '';
+                    title.textContent = '';
                     let i = 0;
                     const type = setInterval(() => {
-                        title.innerText += text.charAt(i);
+                        title.textContent += text.charAt(i);
                         i++;
                         if(i >= text.length) clearInterval(type);
                     }, 30);
@@ -880,9 +880,9 @@ const scenesData = [
         function resizeSlides() {
             const container = document.getElementById('slideContainer');
             if (!container) return;
-            const scaleX = container.clientWidth / 1440;
+            const scaleX = window.innerWidth / 1440;
             // Accounting for letterbox (8vh top, 8vh bottom = 16vh lost)
-            const availableHeight = container.clientHeight * 0.84;
+            const availableHeight = window.innerHeight * 0.84;
             const scaleY = availableHeight / 750;
             const scale = Math.min(scaleX, scaleY) * 0.95;
             document.documentElement.style.setProperty('--scale', scale);
