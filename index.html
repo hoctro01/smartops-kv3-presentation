@@ -274,6 +274,9 @@
             <i data-lucide="pause" id="pauseIcon" style="display:none;"></i>
             <span id="playPauseText">AUTO SYNC</span>
         </button>
+        <button class="btn" id="muteBgmBtn" style="padding: 0 1rem; margin-left: 10px;" title="Bật/Tắt Nhạc Nền">
+            <i data-lucide="volume-2" id="bgmVolIcon"></i>
+        </button>
         <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
         <button class="btn" id="nextBtn">NEXT <i data-lucide="chevron-right"></i></button>
     </div>
@@ -893,6 +896,20 @@ const scenesData = [
             } else stopAudio();
         }
 
+        function toggleBgm() {
+            bgMusic.muted = !bgMusic.muted;
+            const icon = document.getElementById('bgmVolIcon');
+            if (bgMusic.muted) {
+                icon.setAttribute('data-lucide', 'volume-x');
+                icon.style.color = '#ff4444';
+            } else {
+                icon.setAttribute('data-lucide', 'volume-2');
+                icon.style.color = '';
+            }
+            lucide.createIcons();
+            startBgMusic();
+        }
+
         function resizeSlides() {
             const container = document.getElementById('slideContainer');
             if (!container) return;
@@ -908,6 +925,7 @@ const scenesData = [
         document.getElementById('prevBtn').addEventListener('click', prevSlide);
         document.getElementById('nextBtn').addEventListener('click', nextSlide);
         document.getElementById('playPauseBtn').addEventListener('click', toggleAutoPlay);
+        document.getElementById('muteBgmBtn').addEventListener('click', toggleBgm);
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === 'Space') { e.preventDefault(); nextSlide(); }
             else if (e.key === 'ArrowLeft') prevSlide();
