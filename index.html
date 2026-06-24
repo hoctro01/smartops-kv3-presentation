@@ -3,165 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SmartOps KV3 Presentation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <title>SmartOps KV3 - Cinematic Mode</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@300;500;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --viettel-red: #EE0033;
-            --viettel-red-dark: #cc002c;
-            --viettel-red-glow: rgba(238, 0, 51, 0.4);
-            --bg-dark: #09090b; /* Zinc 950 */
-            --bg-card: rgba(24, 24, 27, 0.7); /* Zinc 900 */
-            --bg-card-hover: rgba(39, 39, 42, 0.8);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent-blue: #38bdf8;
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --glass-border-highlight: rgba(238, 0, 51, 0.3);
+            --red-neon: #ff003c;
+            --blue-neon: #00f3ff;
+            --bg-dark: #030305;
+            --hud-color: rgba(0, 243, 255, 0.4);
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-dark);
-            color: var(--text-main);
+            color: #fff;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
             height: 100vh;
-        }
-
-        /* Abstract Dynamic Background */
-        .bg-container {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -2;
-            background-image: url('images/bg_main.png');
-            background-size: cover;
-            background-position: center;
-        }
-        
-        .bg-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -1;
-            background: linear-gradient(135deg, rgba(9, 9, 11, 0.95) 0%, rgba(9, 9, 11, 0.8) 100%);
-            backdrop-filter: blur(2px);
-        }
-
-        .blob {
-            position: absolute;
-            filter: blur(80px);
-            opacity: 0.4;
-            border-radius: 50%;
-            animation: float 10s infinite ease-in-out alternate;
-            z-index: -1;
-        }
-        .blob.red {
-            width: 40vw; height: 40vw;
-            background: var(--viettel-red);
-            top: -10vw; right: -10vw;
-            animation-delay: 0s;
-        }
-        .blob.blue {
-            width: 30vw; height: 30vw;
-            background: var(--accent-blue);
-            bottom: -5vw; left: -10vw;
-            animation-delay: -5s;
-        }
-
-        @keyframes float {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(-30px, 30px) scale(1.1); }
-        }
-
-        /* Glassmorphism effects */
-        .glass {
-            background: var(--bg-card);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2.5rem;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .glass::before {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 50%; height: 100%;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.03), transparent);
-            transform: skewX(-20deg);
-            transition: all 0.7s ease;
-        }
-        
-        .glass:hover {
-            border-color: var(--glass-border-highlight);
-            transform: translateY(-5px);
-            box-shadow: 0 15px 50px rgba(238, 0, 51, 0.15);
-        }
-        
-        .glass:hover::before {
-            left: 200%;
-        }
-
-        .header {
-            padding: 1.5rem 4rem;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            border-bottom: 1px solid var(--glass-border);
-            z-index: 10;
-            background: rgba(9, 9, 11, 0.7);
-            backdrop-filter: blur(20px);
         }
 
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--viettel-red);
-            letter-spacing: 1.5px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+        /* Cinematic Letterbox */
+        .letterbox {
+            position: fixed;
+            left: 0;
+            width: 100vw;
+            height: 8vh;
+            background: #000;
+            z-index: 1000;
+            box-shadow: 0 0 40px rgba(0,0,0,0.9);
+        }
+        .letterbox.top { top: 0; }
+        .letterbox.bottom { bottom: 0; }
+
+        /* HUD Overlays */
+        .hud-overlay {
+            position: fixed;
+            top: 8vh; bottom: 8vh; left: 0; right: 0;
+            pointer-events: none;
+            z-index: 500;
+            background: 
+                linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .crosshair {
+            position: absolute;
+            width: 30px; height: 30px;
+            border: 2px solid var(--hud-color);
+        }
+        .crosshair.tl { top: 20px; left: 20px; border-right: none; border-bottom: none; }
+        .crosshair.tr { top: 20px; right: 20px; border-left: none; border-bottom: none; }
+        .crosshair.bl { bottom: 20px; left: 20px; border-right: none; border-top: none; }
+        .crosshair.br { bottom: 20px; right: 20px; border-left: none; border-top: none; }
+
+        .scanline {
+            width: 100%; height: 2px;
+            background: rgba(0, 243, 255, 0.1);
+            position: absolute;
+            animation: scan 6s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
         }
 
-        .logo span {
-            color: var(--text-main);
-            font-weight: 300;
+        /* Canvas Background */
+        #bgCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            opacity: 0.8;
+            background: radial-gradient(circle at center, #0a1128 0%, #030305 100%);
         }
 
+        /* Slide Container */
         .slide-container {
-            flex: 1;
             position: relative;
             width: 100%;
             height: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 0;
-            overflow: hidden;
-            perspective: 1000px;
+            z-index: 10;
+            perspective: 1500px;
         }
 
         .slide {
             position: absolute;
             width: 1440px;
-            height: 800px;
+            height: 750px;
             opacity: 0;
-            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-            transform: scale(calc(var(--scale, 1) * 0.9)) translateZ(-100px) rotateX(5deg);
-            transform-origin: center center;
+            filter: blur(20px);
+            transform: scale(calc(var(--scale, 1) * 1.5)) translateZ(200px);
+            transition: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
             pointer-events: none;
             display: flex;
             flex-direction: column;
@@ -171,44 +110,70 @@
 
         .slide.active {
             opacity: 1;
-            transform: scale(var(--scale, 1)) translateZ(0) rotateX(0);
+            filter: blur(0);
+            transform: scale(var(--scale, 1)) translateZ(0);
             pointer-events: all;
-            z-index: 5;
         }
 
+        /* Typography & Cyber UI */
         .slide-title {
-            font-size: 3rem;
-            font-weight: 800;
-            color: transparent;
-            background: linear-gradient(90deg, #fff, #cbd5e1);
-            -webkit-background-clip: text;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 3.5rem;
+            font-weight: 900;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 4px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3), 2px 2px 0px var(--red-neon), -2px -2px 0px var(--blue-neon);
             margin-bottom: 0.5rem;
             position: relative;
             display: inline-block;
         }
         
-        .slide-title::after {
-            content: '';
-            position: absolute;
-            left: 0; bottom: -10px;
-            width: 60px; height: 4px;
-            background: var(--viettel-red);
-            border-radius: 2px;
-            box-shadow: 0 0 15px var(--viettel-red-glow);
-        }
-
         .slide-subtitle {
-            font-size: 1.4rem;
-            color: var(--accent-blue);
-            font-weight: 600;
+            font-size: 1.5rem;
+            color: var(--blue-neon);
+            font-weight: 500;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 0.5rem;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .slide-subtitle::before {
+            content: '';
+            display: inline-block;
+            width: 40px; height: 2px;
+            background: var(--red-neon);
+            box-shadow: 0 0 10px var(--red-neon);
         }
 
-        /* Layout Utilities */
+        .glass {
+            background: rgba(10, 15, 25, 0.85);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            border-left: 4px solid var(--blue-neon);
+            padding: 2rem;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0, 243, 255, 0.05);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
+        }
+        .glass::after {
+            content: ''; position: absolute;
+            top: 0; right: 0; width: 20px; height: 20px;
+            border-top: 2px solid var(--hud-color); border-right: 2px solid var(--hud-color);
+        }
+        .glass::before {
+            content: ''; position: absolute;
+            bottom: 0; left: 0; width: 20px; height: 20px;
+            border-bottom: 2px solid var(--hud-color); border-left: 2px solid var(--hud-color);
+        }
+
+        .text-viettel { color: var(--red-neon); text-shadow: 0 0 10px var(--red-neon); }
+        .text-blue { color: var(--blue-neon); text-shadow: 0 0 10px var(--blue-neon); }
+        .highlight { font-weight: 800; color: #fff; }
+
+        /* Utilities */
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
         .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
@@ -216,277 +181,105 @@
         .flex-row { display: flex; align-items: center; gap: 1rem; }
         .flex-center { display: flex; justify-content: center; align-items: center; }
         .text-center { text-align: center; }
+        .mt-2 { margin-top: 1rem; } .mt-4 { margin-top: 2rem; }
 
-        /* Typography & Lists */
-        h3 { font-size: 1.6rem; margin-bottom: 1rem; color: #fff; font-weight: 600; display: flex; align-items: center; gap: 10px;}
-        h3 i { color: var(--viettel-red); }
+        h3 { font-family: 'Share Tech Mono', monospace; font-size: 1.8rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 10px; color: #fff; }
+        h3 i { color: var(--blue-neon); }
         
-        ul.icon-list { list-style: none; display: flex; flex-direction: column; gap: 1.2rem; }
-        ul.icon-list li { 
-            display: flex; 
-            align-items: flex-start; 
-            gap: 15px; 
-            font-size: 1.2rem; 
-            line-height: 1.5;
-            color: var(--text-muted);
-            transition: color 0.3s;
-        }
-        ul.icon-list li:hover { color: #fff; }
-        ul.icon-list li i { 
-            color: var(--viettel-red); 
-            flex-shrink: 0; 
-            margin-top: 3px;
-        }
+        ul.icon-list { list-style: none; display: flex; flex-direction: column; gap: 1.5rem; }
+        ul.icon-list li { display: flex; align-items: flex-start; gap: 15px; font-size: 1.3rem; line-height: 1.5; color: rgba(255,255,255,0.8); }
+        ul.icon-list li i { color: var(--blue-neon); flex-shrink: 0; }
 
-        /* Tags / Badges */
         .tags { display: flex; flex-wrap: wrap; gap: 1rem; }
         .tag {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 0.6rem 1.2rem;
-            border-radius: 30px;
-            font-size: 1rem;
-            color: #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s;
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px solid var(--hud-color);
+            padding: 0.5rem 1rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--blue-neon);
+            display: flex; align-items: center; gap: 8px;
+            text-transform: uppercase;
         }
-        .tag:hover {
-            background: rgba(238, 0, 51, 0.1);
-            border-color: rgba(238, 0, 51, 0.4);
-            color: #fff;
-            transform: translateY(-2px);
-        }
-        .tag.blue:hover {
-            background: rgba(56, 189, 248, 0.1);
-            border-color: rgba(56, 189, 248, 0.4);
-        }
-        .tag.red-solid {
-            background: var(--viettel-red);
-            border: none;
-            color: white;
-            box-shadow: 0 4px 15px var(--viettel-red-glow);
-        }
-
-        /* Flow Arrow */
-        .flow-arrow {
-            color: var(--viettel-red);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Animations */
-        .animate-in {
-            opacity: 0;
-            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-            animation-delay: var(--delay, 0s);
-        }
+        .tag.blue { background: rgba(0, 243, 255, 0.1); border-color: var(--blue-neon); }
+        .tag.red-solid { background: rgba(255, 0, 60, 0.1); border-color: var(--red-neon); color: var(--red-neon); }
         
-        .slide.active .animate-in {
-            animation-play-state: running;
+        .chat-bubble {
+            background: rgba(255,255,255,0.03);
+            border-left: 3px solid rgba(255,255,255,0.3);
+            padding: 1rem 1.5rem;
+            font-size: 1.2rem; display: flex; align-items: center; gap: 15px;
         }
 
-        @keyframes fadeInUp {
-            0% { opacity: 0; transform: translateY(30px); }
-            100% { opacity: 1; transform: translateY(0); }
+        .widget {
+            background: rgba(0, 243, 255, 0.03);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            padding: 1.5rem;
+            position: relative;
         }
+        .widget-title { font-family: 'Share Tech Mono', monospace; color: var(--hud-color); font-size: 1rem; display: flex; align-items: center; gap: 8px; text-transform: uppercase; }
+        .widget-value { font-size: 2.5rem; font-weight: 900; margin: 10px 0; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .widget-status { font-size: 0.9rem; display: flex; align-items: center; gap: 5px; color: rgba(255,255,255,0.6); }
         
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 0 0 rgba(238,0,51,0.4); }
-            70% { box-shadow: 0 0 0 15px rgba(238,0,51,0); }
-            100% { box-shadow: 0 0 0 0 rgba(238,0,51,0); }
-        }
+        .status-good { color: #00ff66; text-shadow: 0 0 10px #00ff66; }
+        .status-bad { color: var(--red-neon); text-shadow: 0 0 10px var(--red-neon); }
+        .status-warn { color: #f59e0b; text-shadow: 0 0 10px #f59e0b; }
+
+        .flow-arrow { display: flex; justify-content: center; color: var(--hud-color); opacity: 0.6; }
+
+        /* Staggered Animations */
+        .animate-in { opacity: 0; filter: blur(10px); transform: translateY(20px); transition: all 0.8s ease var(--delay); }
+        .slide.active .animate-in { opacity: 1; filter: blur(0); transform: translateY(0); }
 
         /* Controls */
         .controls {
-            padding: 1.5rem 4rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(9, 9, 11, 0.85);
-            border-top: 1px solid var(--glass-border);
-            z-index: 10;
-            backdrop-filter: blur(20px);
+            position: fixed;
+            bottom: 2vh; left: 0; width: 100%;
+            display: flex; justify-content: center; align-items: center; gap: 30px;
+            z-index: 1000;
         }
-
         .btn {
-            background: var(--viettel-red);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .btn:hover {
-            background: var(--viettel-red-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px var(--viettel-red-glow);
-        }
-        
-        .btn-outline {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--glass-border);
-            color: var(--text-main);
-        }
-        
-        .btn-outline:hover {
-            background: rgba(255, 255, 255, 0.1);
-            transform: translateY(-2px);
-            box-shadow: none;
-        }
-
-        .progress-bar-container {
-            flex: 1;
-            margin: 0 3rem;
-            height: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 4px;
-            position: relative;
-            cursor: pointer;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #cc002c, #ff1a4d);
-            border-radius: 4px;
-            width: 0%;
-            transition: width 0.4s ease;
-            box-shadow: 0 0 15px var(--viettel-red-glow);
-        }
-        
-        .progress-markers {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            display: flex; justify-content: space-between;
-        }
-        
-        .marker {
-            width: 2px; height: 100%;
-            background: rgba(9,9,11,0.8);
-        }
-
-        .highlight { color: #fff; font-weight: 800; }
-        .text-viettel { color: var(--viettel-red); }
-        .text-blue { color: var(--accent-blue); }
-        
-        /* Dashboard Widget Style */
-        .widget {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 12px;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+            background: rgba(0,0,0,0.5); border: 1px solid var(--hud-color); color: var(--blue-neon);
+            padding: 10px 20px; font-family: 'Share Tech Mono', monospace; font-size: 1rem;
+            cursor: pointer; display: flex; align-items: center; gap: 8px; text-transform: uppercase;
             transition: all 0.3s;
         }
-        .widget:hover {
-            background: rgba(255,255,255,0.05);
-            border-color: rgba(255,255,255,0.1);
-        }
-        .widget-title {
-            color: var(--accent-blue);
-            font-size: 1.1rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .widget-value {
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: #fff;
-        }
-        .widget-status {
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .status-good { color: #10b981; }
-        .status-warn { color: #f59e0b; }
-        .status-bad { color: var(--viettel-red); }
-
-        .subtitles-container {
-            display: none;
-        }
-        
-        .chat-bubble {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 1rem 1.5rem;
-            border-radius: 16px;
-            border-bottom-left-radius: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.1rem;
-            color: #e2e8f0;
-        }
-        .chat-bubble i { color: var(--accent-blue); }
-
-        /* Responsive scaling moved to JS */
+        .btn:hover { background: var(--blue-neon); color: #000; box-shadow: 0 0 15px var(--blue-neon); }
+        .progress-bar-container { width: 300px; height: 4px; background: rgba(255,255,255,0.1); position: relative; }
+        .progress-bar { height: 100%; background: var(--red-neon); width: 0%; transition: width 0.3s; box-shadow: 0 0 10px var(--red-neon); }
     </style>
 </head>
 <body>
 
-    <div class="bg-container"></div>
-    <div class="bg-overlay"></div>
-    <div class="blob red"></div>
-    <div class="blob blue"></div>
+    <!-- Letterbox -->
+    <div class="letterbox top"></div>
+    <div class="letterbox bottom"></div>
 
-    <div class="header">
-        <div class="logo">
-            <i data-lucide="boxes" style="width: 28px; height: 28px;"></i>
-            VIETTEL <span>SMARTOPS KV3</span>
-        </div>
-        <div style="font-size: 1rem; color: var(--text-muted); font-weight: 600; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
-            <div style="width: 8px; height: 8px; background: var(--viettel-red); border-radius: 50%; box-shadow: 0 0 10px var(--viettel-red);"></div>
-            AI FIRST DIGITAL OPERATIONS CENTER
-        </div>
+    <!-- HUD Overlay -->
+    <div class="hud-overlay">
+        <div class="crosshair tl"></div><div class="crosshair tr"></div>
+        <div class="crosshair bl"></div><div class="crosshair br"></div>
+        <div class="scanline"></div>
     </div>
 
-    <div class="slide-container" id="slideContainer">
-        <!-- Slides injected via JS -->
-    </div>
+    <!-- Dynamic Background -->
+    <canvas id="bgCanvas"></canvas>
 
-    <div class="subtitles-container">
-        <div class="subtitle-text" id="subtitleText"></div>
-    </div>
+    <div class="slide-container" id="slideContainer"></div>
 
     <div class="controls">
-        <button class="btn btn-outline" id="prevBtn">
-            <i data-lucide="chevron-left"></i> Trước
-        </button>
-        
+        <button class="btn" id="prevBtn"><i data-lucide="chevron-left"></i> PREV</button>
         <button class="btn" id="playPauseBtn">
             <i data-lucide="play" id="playIcon"></i>
             <i data-lucide="pause" id="pauseIcon" style="display:none;"></i>
-            <span id="playPauseText">Auto Play Voice</span>
+            <span id="playPauseText">AUTO SYNC</span>
         </button>
-
-        <div class="progress-bar-container" id="progressContainer">
-            <div class="progress-bar" id="progressBar"></div>
-            <div class="progress-markers" id="progressMarkers"></div>
-        </div>
-
-        <button class="btn btn-outline" id="nextBtn">
-            Tiếp <i data-lucide="chevron-right"></i>
-        </button>
+        <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+        <button class="btn" id="nextBtn">NEXT <i data-lucide="chevron-right"></i></button>
     </div>
 
     <script>
-        const scenesData = [
+const scenesData = [
             {
                 title: "BÀI TOÁN ĐIỀU HÀNH MỚI",
                 subtitle: "Khối lượng quản lý khổng lồ & Dữ liệu phân tán",
@@ -913,72 +706,60 @@
         ];
 
         let currentScene = 0;
-        let isPlaying = false;
         let isAutoPlaying = false;
         let slideTimeout = null;
 
         const container = document.getElementById('slideContainer');
-        const subtitleText = document.getElementById('subtitleText');
         const progressBar = document.getElementById('progressBar');
-        const progressMarkers = document.getElementById('progressMarkers');
         
-        // Initialize slides
         function initSlides() {
             scenesData.forEach((scene, index) => {
                 const slide = document.createElement('div');
                 slide.className = 'slide';
                 slide.id = 'slide-' + index;
                 slide.innerHTML = `
-                    <div>
-                        <div class="slide-subtitle">0${index + 1} // ${scene.subtitle}</div>
-                        <h2 class="slide-title">${scene.title}</h2>
+                    <div style="text-align: left; margin-bottom: 2rem;">
+                        <div class="slide-subtitle">SYS.FILE.${index + 1} // ${scene.subtitle}</div>
+                        <h2 class="slide-title type-effect">${scene.title}</h2>
                     </div>
                     ${scene.content}
                 `;
                 container.appendChild(slide);
-
-                // Create progress markers
-                if (index > 0) {
-                    const marker = document.createElement('div');
-                    marker.className = 'marker';
-                    marker.style.left = `${(index / scenesData.length) * 100}%`;
-                    progressMarkers.appendChild(marker);
-                }
             });
-
             showSlide(0);
         }
 
         function showSlide(index) {
-            // Remove active from all
             document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
-            
-            // Add active to current
             const slide = document.getElementById('slide-' + index);
             if(slide) {
                 slide.classList.add('active');
-                lucide.createIcons(); // Re-initialize icons for newly shown slide content
+                lucide.createIcons();
+                // Typewriter effect on title
+                const title = slide.querySelector('.slide-title');
+                if(title) {
+                    const text = title.getAttribute('data-text') || title.innerText;
+                    title.setAttribute('data-text', text);
+                    title.innerText = '';
+                    let i = 0;
+                    const type = setInterval(() => {
+                        title.innerText += text.charAt(i);
+                        i++;
+                        if(i >= text.length) clearInterval(type);
+                    }, 30);
+                }
             }
-            
-            // Update progress bar
-            const progress = ((index) / (scenesData.length - 1)) * 100;
-            progressBar.style.width = `${progress}%`;
+            progressBar.style.width = `${(index / (scenesData.length - 1)) * 100}%`;
 
-            // Handle audio/tts if auto playing
-            if (isAutoPlaying) {
-                playAudioForSlide(index);
-            } else {
-                stopAudio();
-            }
+            if (isAutoPlaying) playAudioForSlide(index);
+            else stopAudio();
         }
 
         function nextSlide() {
             if (currentScene < scenesData.length - 1) {
                 currentScene++;
                 showSlide(currentScene);
-            } else {
-                toggleAutoPlay(); // End presentation
-            }
+            } else toggleAutoPlay();
         }
 
         function prevSlide() {
@@ -988,39 +769,15 @@
             }
         }
 
-        // --- Audio Implementation ---
-        
         function playAudioForSlide(index) {
             stopAudio();
             clearTimeout(slideTimeout);
-            
-            subtitleText.classList.add('visible');
-
-            // Load real audio file (e.g. audio/scene_1.mp3)
             const audioUrl = `audio/scene_${index + 1}.mp3`;
             const audio = new Audio(audioUrl);
-            
-            window.currentAudio = audio; // Keep reference to stop it later
-            
-            audio.oncanplaythrough = () => {
-                if(window.currentAudio === audio) {
-                    audio.oncanplaythrough = null;
-                    audio.play();
-                }
-            };
-
-            audio.onended = () => {
-                if(isAutoPlaying) {
-                    slideTimeout = setTimeout(nextSlide, 1000);
-                }
-            };
-
-            audio.onerror = () => {
-                console.warn("Audio file not found: " + audioUrl);
-                if(isAutoPlaying) {
-                    slideTimeout = setTimeout(nextSlide, 5000);
-                }
-            };
+            window.currentAudio = audio;
+            audio.oncanplaythrough = () => { if(window.currentAudio === audio) { audio.oncanplaythrough = null; audio.play(); } };
+            audio.onended = () => { if(isAutoPlaying) slideTimeout = setTimeout(nextSlide, 1000); };
+            audio.onerror = () => { if(isAutoPlaying) slideTimeout = setTimeout(nextSlide, 4000); };
         }
 
         function stopAudio() {
@@ -1030,76 +787,96 @@
                 window.currentAudio = null;
             }
             clearTimeout(slideTimeout);
-            subtitleText.classList.remove('visible');
         }
 
         function toggleAutoPlay() {
             isAutoPlaying = !isAutoPlaying;
-            const playIcon = document.getElementById('playIcon');
-            const pauseIcon = document.getElementById('pauseIcon');
-            const playPauseText = document.getElementById('playPauseText');
-
+            document.getElementById('playIcon').style.display = isAutoPlaying ? 'none' : 'inline-block';
+            document.getElementById('pauseIcon').style.display = isAutoPlaying ? 'inline-block' : 'none';
+            document.getElementById('playPauseText').textContent = isAutoPlaying ? 'SYSTEM OVERRIDE' : 'AUTO SYNC';
             if (isAutoPlaying) {
-                playIcon.style.display = 'none';
-                pauseIcon.style.display = 'inline-block';
-                playPauseText.textContent = 'Dừng (Pause)';
-                
-                // If we are at the end and click play, restart
-                if (currentScene === scenesData.length - 1 && (!window.currentAudio || window.currentAudio.paused)) {
-                    currentScene = 0;
-                }
+                if (currentScene === scenesData.length - 1 && (!window.currentAudio || window.currentAudio.ended)) currentScene = 0;
                 showSlide(currentScene);
-            } else {
-                playIcon.style.display = 'inline-block';
-                pauseIcon.style.display = 'none';
-                playPauseText.textContent = 'Auto Play Voice';
-                stopAudio();
-            }
+            } else stopAudio();
         }
 
-        // Event Listeners
-        document.getElementById('nextBtn').addEventListener('click', () => {
-            if(isAutoPlaying) stopAudio(); // pause current audio to jump
-            nextSlide();
-        });
-        
-        document.getElementById('prevBtn').addEventListener('click', () => {
-            if(isAutoPlaying) stopAudio();
-            prevSlide();
-        });
-
-        document.getElementById('playPauseBtn').addEventListener('click', toggleAutoPlay);
-
-        // Keyboard navigation
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowRight' || e.key === 'Space') {
-                e.preventDefault();
-                nextSlide();
-            } else if (e.key === 'ArrowLeft') {
-                prevSlide();
-            }
-        });
-
-        // Setup Responsive Scaling
         function resizeSlides() {
             const container = document.getElementById('slideContainer');
             if (!container) return;
-            
-            // Base resolution 1440x800
             const scaleX = container.clientWidth / 1440;
-            const scaleY = container.clientHeight / 800;
-            const scale = Math.min(scaleX, scaleY) * 0.95; // 95% to leave a tiny padding
-            
+            // Accounting for letterbox (8vh top, 8vh bottom = 16vh lost)
+            const availableHeight = container.clientHeight * 0.84;
+            const scaleY = availableHeight / 750;
+            const scale = Math.min(scaleX, scaleY) * 0.95;
             document.documentElement.style.setProperty('--scale', scale);
         }
 
         window.addEventListener('resize', resizeSlides);
-        resizeSlides();
+        document.getElementById('prevBtn').addEventListener('click', prevSlide);
+        document.getElementById('nextBtn').addEventListener('click', nextSlide);
+        document.getElementById('playPauseBtn').addEventListener('click', toggleAutoPlay);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') { e.preventDefault(); nextSlide(); }
+            else if (e.key === 'ArrowLeft') prevSlide();
+        });
 
-        // Initialize
+        // CANVAS PARTICLES
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+        
+        function initCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            particles = [];
+            for(let i = 0; i < 150; i++) {
+                particles.push({
+                    x: Math.random() * width,
+                    y: Math.random() * height,
+                    vx: (Math.random() - 0.5) * 1.5,
+                    vy: (Math.random() - 0.5) * 1.5,
+                    radius: Math.random() * 2
+                });
+            }
+        }
+        
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(0, 243, 255, 0.5)';
+            ctx.strokeStyle = 'rgba(0, 243, 255, 0.1)';
+            
+            for(let i=0; i<particles.length; i++) {
+                let p = particles[i];
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < 0 || p.x > width) p.vx *= -1;
+                if(p.y < 0 || p.y > height) p.vy *= -1;
+                
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
+                ctx.fill();
+                
+                for(let j=i+1; j<particles.length; j++) {
+                    let p2 = particles[j];
+                    let dist = Math.sqrt(Math.pow(p.x-p2.x, 2) + Math.pow(p.y-p2.y, 2));
+                    if(dist < 150) {
+                        ctx.beginPath();
+                        ctx.moveTo(p.x, p.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                }
+            }
+            requestAnimationFrame(animateCanvas);
+        }
+        
+        window.addEventListener('resize', initCanvas);
+        
+        initCanvas();
+        animateCanvas();
+        resizeSlides();
         initSlides();
         lucide.createIcons();
-
     </script>
 </body>
 </html>
