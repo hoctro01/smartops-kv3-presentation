@@ -277,6 +277,9 @@
         <button class="btn" id="muteBgmBtn" style="padding: 0 1rem; margin-left: 10px;" title="Bật/Tắt Nhạc Nền">
             <i data-lucide="volume-2" id="bgmVolIcon"></i>
         </button>
+        <button class="btn" id="speedBtn" style="display: none; padding: 0 1rem; margin-left: 10px;" title="Tốc độ phát video">
+            <i data-lucide="gauge"></i>&nbsp;<span id="speedText">1.0x</span>
+        </button>
         <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
         <button class="btn" id="nextBtn">NEXT <i data-lucide="chevron-right"></i></button>
     </div>
@@ -773,6 +776,7 @@ const scenesData = [
         let currentScene = 0;
         let isAutoPlaying = false;
         let slideTimeout = null;
+        let currentPlaybackRate = 1.0;
         
         let bgMusic = new Audio('audio/un_contexte.mp3?v=2');
         bgMusic.loop = true;
@@ -830,6 +834,17 @@ const scenesData = [
 
             document.querySelectorAll('video').forEach(v => { v.pause(); v.currentTime = 0; });
 
+            // Toggle Speed Button and Playback Rate
+            const video = slide ? slide.querySelector('video') : null;
+            const speedBtn = document.getElementById('speedBtn');
+            if (speedBtn) {
+                speedBtn.style.display = video ? 'flex' : 'none';
+                document.getElementById('speedText').innerText = currentPlaybackRate.toFixed(1) + 'x';
+            }
+            if (video) {
+                video.playbackRate = currentPlaybackRate;
+            }
+
             if (isAutoPlaying) playAudioForSlide(index);
             else stopAudio();
         }
@@ -858,6 +873,7 @@ const scenesData = [
             const video = slide ? slide.querySelector('video') : null;
             
             if (video) {
+                video.playbackRate = currentPlaybackRate;
                 video.play().catch(e => console.log(e));
                 video.onended = () => { if(isAutoPlaying) nextSlide(); };
             }
@@ -926,6 +942,20 @@ const scenesData = [
         document.getElementById('nextBtn').addEventListener('click', nextSlide);
         document.getElementById('playPauseBtn').addEventListener('click', toggleAutoPlay);
         document.getElementById('muteBgmBtn').addEventListener('click', toggleBgm);
+
+        const playbackRates = [1.0, 1.5, 2.0, 4.0];
+        document.getElementById('speedBtn').addEventListener('click', () => {
+            let index = playbackRates.indexOf(currentPlaybackRate);
+            index = (index + 1) % playbackRates.length;
+            currentPlaybackRate = playbackRates[index];
+            document.getElementById('speedText').innerText = currentPlaybackRate.toFixed(1) + 'x';
+            
+            const activeSlide = document.querySelector('.slide.active');
+            const video = activeSlide ? activeSlide.querySelector('video') : null;
+            if (video) {
+                video.playbackRate = currentPlaybackRate;
+            }
+        });
         document.addEventListener('keydown', (e) => {
             if (e.key === 'ArrowRight' || e.key === 'Space') { e.preventDefault(); nextSlide(); }
             else if (e.key === 'ArrowLeft') prevSlide();
