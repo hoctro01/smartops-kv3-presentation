@@ -843,6 +843,9 @@ const scenesData = [
             }
             if (video) {
                 video.playbackRate = currentPlaybackRate;
+                if (!isAutoPlaying) {
+                    video.play().catch(e => console.log("Manual autoplay blocked by browser:", e));
+                }
             }
 
             if (isAutoPlaying) playAudioForSlide(index);
